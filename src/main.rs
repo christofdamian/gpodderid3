@@ -5,6 +5,7 @@ use rusqlite::{Connection, Result};
 // use std::collections::HashMap;
 
 #[derive(Debug)]
+#[derive(Clone)]
 struct Episode {
     title: String,
     description: String,
@@ -33,7 +34,13 @@ fn main() -> Result<()> {
     })?;
 
     for episode in episodes {
-        println!("Found episode {:?}", episode);
+//        println!("Found episode {:?}", episode);
+
+	let e = episode?.clone();
+
+	let path = format!("{}/{}", e.download_folder, e.download_filename);
+
+	println!("path:{}", path);
     }
 
     Ok(())
