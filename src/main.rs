@@ -2,7 +2,8 @@ extern crate rusqlite;
 
 use rusqlite::NO_PARAMS;
 use rusqlite::{Connection, Result};
-// use std::collections::HashMap;
+use std::path::Path;
+use id3::{Tag, Version, ErrorKind};
 
 #[derive(Debug)]
 #[derive(Clone)]
@@ -40,7 +41,26 @@ fn main() -> Result<()> {
 
 	let path = format!("{}/{}", e.download_folder, e.download_filename);
 
-	println!("path:{}", path);
+	if Path::new(&path).exists() {
+	    println!("path:{}", path);
+	    println!("path exists!");
+
+	    let tag = Tag::read_from_path(&path);
+	    let mut tag = match tag {
+		Ok(tag) => tag,
+		Err(error) => match error.kind {
+		    ErrorKind::NoTag => Tag::new(),
+		    other_error => panic!("Problem reading tag: {:?}", other_error),
+		},
+	    };
+
+	    let title = match tag.title() {
+		Some(x) => x,
+		None    => e.title.as_str(),
+	    };
+	    tag.set_title(title);
+	    tag.write_to_path(&path, Version::Id3v22).unwrap();
+	}
     }
 
     Ok(())
