@@ -35,8 +35,6 @@ fn main() -> Result<()> {
     })?;
 
     for episode in episodes {
-//        println!("Found episode {:?}", episode);
-
 	let e = episode?.clone();
 
 	let path = format!("{}/{}", e.download_folder, e.download_filename);
@@ -45,23 +43,34 @@ fn main() -> Result<()> {
 	    println!("path:{}", path);
 	    println!("path exists!");
 
-	    let tag = Tag::read_from_path(&path);
-	    let mut tag = match tag {
-		Ok(tag) => tag,
-		Err(error) => match error.kind {
-		    ErrorKind::NoTag => Tag::new(),
-		    other_error => panic!("Problem reading tag: {:?}", other_error),
-		},
-	    };
+	    let mut tag = read_or_new_tag(&path);
+	    let tag2 = tag.clone();
 
-	    let title = match tag.title() {
+
+	    let title = tag2.title();
+	    let title = match title {
 		Some(x) => x,
 		None    => e.title.as_str(),
 	    };
 	    tag.set_title(title);
-	    tag.write_to_path(&path, Version::Id3v22).unwrap();
+	    tag.write_to_path(&path, Version::Id3v24).unwrap();
 	}
     }
 
     Ok(())
+}
+
+fn read_or_new_tag(path: &String) -> Tag {
+    println!("path:{}", path);
+
+    let tag = Tag::read_from_path(&path);
+
+    let tag = match tag {
+	Ok(tag) => tag,
+	Err(error) => match error.kind {
+	    ErrorKind::NoTag => Tag::new(),
+	    other_error => panic!("Problem reading tag: {:?}", other_error),
+	},
+    };
+    tag
 }
