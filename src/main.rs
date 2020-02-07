@@ -46,12 +46,8 @@ fn main() -> Result<()> {
 	    let mut tag = read_or_new_tag(&path);
 	    let tag2 = tag.clone();
 
+	    let title = tag2.title().unwrap_or(e.title.as_str());
 
-	    let title = tag2.title();
-	    let title = match title {
-		Some(x) => x,
-		None    => e.title.as_str(),
-	    };
 	    tag.set_title(title);
 	    tag.write_to_path(&path, Version::Id3v24).unwrap();
 	}
