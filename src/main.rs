@@ -20,7 +20,10 @@ fn main() -> Result<()> {
     let conn = Connection::open("gpodder.db")?;
 
     let mut stmt = conn.prepare(
-	"select episode.title,episode.description,episode.mime_type,episode.download_filename,podcast.title,podcast.download_folder from episode,podcast where podcast.id=podcast_id"
+    	"
+	select episode.title,episode.description,episode.mime_type,episode.download_filename,podcast.title,podcast.download_folder from episode,podcast
+	where podcast.id=podcast_id AND download_filename IS NOT NULL
+	"
     )?;
 
     let episodes = stmt.query_map(NO_PARAMS, |row| {
@@ -39,8 +42,9 @@ fn main() -> Result<()> {
 
 	let path = format!("{}/{}", e.download_folder, e.download_filename);
 
+	println!("path:{}", path);
+
 	if Path::new(&path).exists() {
-	    println!("path:{}", path);
 	    println!("path exists!");
 
 	    let mut tag = read_or_new_tag(&path);
