@@ -90,8 +90,8 @@ fn gpodderid3(database: String, path: String) -> Result<()> {
 	    let mut tag = read_or_new_tag(&path);
 	    let tag2 = tag.clone();
 
-	    tag.set_title(tag2.title().unwrap_or(e.title.as_str()));
-	    tag.set_album(tag2.album().unwrap_or(e.podcast_title.as_str()));
+	    tag.set_title(tag2.title().unwrap_or_else(|| e.title.as_str()));
+	    tag.set_album(tag2.album().unwrap_or_else(|| e.podcast_title.as_str()));
 
 	    tag.write_to_path(&path, Version::Id3v24).unwrap();
 	}
@@ -100,17 +100,16 @@ fn gpodderid3(database: String, path: String) -> Result<()> {
     Ok(())
 }
 
-fn read_or_new_tag(path: &String) -> Tag {
+fn read_or_new_tag(path: &str) -> Tag {
     println!("path:{}", path);
 
     let tag = Tag::read_from_path(&path);
 
-    let tag = match tag {
+    match tag {
 	Ok(tag) => tag,
 	Err(error) => match error.kind {
 	    ErrorKind::NoTag => Tag::new(),
 	    other_error => panic!("Problem reading tag: {:?}", other_error),
 	},
-    };
-    tag
+    }
 }
