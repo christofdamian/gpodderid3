@@ -10,3 +10,4 @@ edition = "2018"
 
 rusqlite = ""
 id3 = ""
+clap = ""

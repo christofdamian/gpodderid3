@@ -4,6 +4,7 @@ use rusqlite::NO_PARAMS;
 use rusqlite::{Connection, Result};
 use std::path::Path;
 use id3::{Tag, Version, ErrorKind};
+use clap::{Arg, App};
 
 #[derive(Debug)]
 #[derive(Clone)]
@@ -17,11 +18,45 @@ struct Episode {
 }
 
 fn main() -> Result<()> {
-    let conn = Connection::open("gpodder.db")?;
+    let matches = App::new("gpooderid3")
+	.version("0.1")
+	.author("Christof Damian <christof@damian.net>")
+	.about("Add missing tags to gpodder downloads")
+	.arg(Arg::with_name("database")
+	     .short("d")
+	     .long("database")
+	     .help("Sets gpodder database")
+	     .takes_value(true)
+	     .default_value("gpodder.db")
+	)
+
+	.arg(Arg::with_name("path")
+	     .short("p")
+	     .long("path")
+	     .help("Sets download path")
+	     .takes_value(true)
+	     .default_value(".")
+	)
+	.get_matches();
+
+    let database = matches.value_of("database").unwrap().to_string();
+    let path = matches.value_of("path").unwrap().to_string();
+
+    gpodderid3(database, path)
+}
+
+fn gpodderid3(database: String, path: String) -> Result<()> {
+    let conn = Connection::open(database)?;
 
     let mut stmt = conn.prepare(
     	"
-	select episode.title,episode.description,episode.mime_type,episode.download_filename,podcast.title,podcast.download_folder from episode,podcast
+	select
+          episode.title,
+          episode.description,
+          episode.mime_type,
+          episode.download_filename,
+          podcast.title,podcast.download_folder
+        from episode,podcast
 	where podcast.id=podcast_id AND download_filename IS NOT NULL
 	"
     )?;
@@ -40,7 +75,12 @@ fn main() -> Result<()> {
     for episode in episodes {
 	let e = episode?.clone();
 
-	let path = format!("{}/{}", e.download_folder, e.download_filename);
+	let path = format!(
+	    "{}/{}/{}",
+	    path,
+	    e.download_folder,
+	    e.download_filename
+	);
 
 	println!("path:{}", path);
 
