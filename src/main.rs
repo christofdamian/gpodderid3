@@ -55,7 +55,8 @@ fn gpodderid3(database: String, path: String) -> Result<()> {
           episode.description,
           episode.mime_type,
           episode.download_filename,
-          podcast.title,podcast.download_folder
+          podcast.title AS podcast_title,
+          podcast.download_folder
         from episode,podcast
 	where podcast.id=podcast_id AND download_filename IS NOT NULL
 	",
@@ -63,12 +64,12 @@ fn gpodderid3(database: String, path: String) -> Result<()> {
 
     let episodes = stmt.query_map(NO_PARAMS, |row| {
         Ok(Episode {
-            title: row.get(0)?,
-            description: row.get(1)?,
-            mime_type: row.get(2)?,
-            download_filename: row.get(3)?,
-            podcast_title: row.get(4)?,
-            download_folder: row.get(5)?,
+            title: row.get("title")?,
+            description: row.get("description")?,
+            mime_type: row.get("mime_type")?,
+            download_filename: row.get("download_filename")?,
+            podcast_title: row.get("podcast_title")?,
+            download_folder: row.get("download_folder")?,
         })
     })?;
 
