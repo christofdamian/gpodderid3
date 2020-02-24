@@ -39,13 +39,13 @@ fn main() -> Result<()> {
         )
         .get_matches();
 
-    let database = matches.value_of("database").unwrap().to_string();
-    let path = matches.value_of("path").unwrap().to_string();
+    let database = matches.value_of("database").unwrap();
+    let path = matches.value_of("path").unwrap();
 
     gpodderid3(database, path)
 }
 
-fn gpodderid3(database: String, path: String) -> Result<()> {
+fn gpodderid3(database: &str, path: &str) -> Result<()> {
     let conn = Connection::open(database)?;
 
     let mut stmt = conn.prepare(
@@ -62,7 +62,7 @@ fn gpodderid3(database: String, path: String) -> Result<()> {
 	",
     )?;
 
-    let episodes = stmt.query_map(NO_PARAMS, |row| {
+    let episode_iter = stmt.query_map(NO_PARAMS, |row| {
         Ok(Episode {
             title: row.get("title")?,
             description: row.get("description")?,
@@ -73,27 +73,43 @@ fn gpodderid3(database: String, path: String) -> Result<()> {
         })
     })?;
 
-    for episode in episodes {
-        let e = episode?.clone();
-
-        let path = format!("{}/{}/{}", path, e.download_folder, e.download_filename);
-
-        println!("path:{}", path);
-
-        if Path::new(&path).exists() {
-            println!("path exists!");
-
-            let mut tag = read_or_new_tag(&path);
-            let tag2 = tag.clone();
-
-            tag.set_title(tag2.title().unwrap_or_else(|| e.title.as_str()));
-            tag.set_album(tag2.album().unwrap_or_else(|| e.podcast_title.as_str()));
-
-            tag.write_to_path(&path, Version::Id3v24).unwrap();
-        }
+    for episode in episode_iter {
+        episode_tag(path, &episode.unwrap())?;
     }
 
     Ok(())
+}
+
+fn episode_tag(base_path: &str, episode: &Episode) -> Result<()> {
+    let path = episode_path(base_path, episode);
+
+    println!("path:{}", path);
+
+    if Path::new(&path).exists() {
+        println!("path exists!");
+
+        let mut tag = read_or_new_tag(&path);
+        let tag2 = tag.clone();
+
+        tag.set_title(
+            tag2.title().unwrap_or_else(|| episode.title.as_str())
+        );
+        tag.set_album(
+            tag2.album().unwrap_or_else(|| episode.podcast_title.as_str()));
+
+        tag.write_to_path(&path, Version::Id3v24).unwrap();
+    }
+
+    Ok(())
+}
+
+fn episode_path(base_path: &str, episode: &Episode) -> String {
+    format!(
+        "{}/{}/{}",
+        base_path,
+        episode.download_folder,
+        episode.download_filename
+    )
 }
 
 fn read_or_new_tag(path: &str) -> Tag {
