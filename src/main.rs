@@ -89,13 +89,13 @@ fn episode_tag(base_path: &str, episode: &Episode) -> Result<()> {
         println!("path exists!");
 
         let mut tag = read_or_new_tag(&path);
-        let tag2 = tag.clone();
 
         tag.set_title(
-            tag2.title().unwrap_or_else(|| episode.title.as_str())
+            tag.title().unwrap_or_else(|| episode.title.as_str()).to_owned()
         );
         tag.set_album(
-            tag2.album().unwrap_or_else(|| episode.podcast_title.as_str()));
+            tag.album().unwrap_or_else(|| episode.podcast_title.as_str()).to_owned()
+        );
 
         tag.write_to_path(&path, Version::Id3v24).unwrap();
     }
