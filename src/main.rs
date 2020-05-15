@@ -83,21 +83,31 @@ fn gpodderid3(database: &str, path: &str) -> Result<()> {
 fn episode_tag(base_path: &str, episode: &Episode) -> Result<()> {
     let path = episode_path(base_path, episode);
 
-    println!("path:{}", path);
-
     if Path::new(&path).exists() {
-        println!("path exists!");
+        println!("processing :{}", path);
 
         let mut tag = read_or_new_tag(&path);
+        let mut modified = false;
 
-        tag.set_title(
-            tag.title().unwrap_or_else(|| episode.title.as_str()).to_owned()
-        );
-        tag.set_album(
-            tag.album().unwrap_or_else(|| episode.podcast_title.as_str()).to_owned()
-        );
+        if tag.title().unwrap_or("")=="" {
+            tag.set_title(
+                tag.title().unwrap_or_else(|| episode.title.as_str()).to_owned()
+            );
+            modified = true;
+        }
+        if tag.album().unwrap_or("")=="" {
+            tag.set_album(
+                tag.album().unwrap_or_else(|| episode.podcast_title.as_str()).to_owned()
+            );
+            modified = true;
+        }
 
-        tag.write_to_path(&path, Version::Id3v24).unwrap();
+        if modified {
+            println!("updating tags");
+            if let Err(_err) = tag.write_to_path(&path, Version::Id3v24) {
+                println!("Failed to write tag");
+            }
+        }
     }
 
     Ok(())
@@ -113,8 +123,6 @@ fn episode_path(base_path: &str, episode: &Episode) -> String {
 }
 
 fn read_or_new_tag(path: &str) -> Tag {
-    println!("path:{}", path);
-
     let tag = Tag::read_from_path(&path);
 
     match tag {
