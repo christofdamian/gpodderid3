@@ -2,7 +2,6 @@ extern crate rusqlite;
 
 use clap::{App, Arg};
 use id3::{ErrorKind, Tag, Version};
-use rusqlite::NO_PARAMS;
 use rusqlite::{Connection, Result};
 use std::path::Path;
 
@@ -62,7 +61,7 @@ fn gpodderid3(database: &str, path: &str) -> Result<()> {
 	",
     )?;
 
-    let episode_iter = stmt.query_map(NO_PARAMS, |row| {
+    let episode_iter = stmt.query_map([], |row| {
         Ok(Episode {
             title: row.get("title")?,
             description: row.get("description")?,

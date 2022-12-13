@@ -8,6 +8,6 @@ edition = "2018"
 
 [dependencies]
 
-rusqlite = "0.23"
+rusqlite = "0.28"
 id3 = "0.5"
 clap = "2.33"
