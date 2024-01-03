@@ -10,4 +10,4 @@ edition = "2018"
 
 rusqlite = "0.29"
 id3 = "1.7"
-clap = "4.2"
+clap = "4.3"
