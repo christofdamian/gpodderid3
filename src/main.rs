@@ -1,45 +1,43 @@
 extern crate rusqlite;
 
-use clap::{App, Arg};
-use id3::{ErrorKind, Tag, Version};
+use clap::{Command, Arg};
+use id3::{ErrorKind, Tag, TagLike, Version};
 use rusqlite::{Connection, Result};
 use std::path::Path;
 
 #[derive(Debug, Clone)]
 struct Episode {
     title: String,
-    description: String,
-    mime_type: String,
+    // description: String,
+    // mime_type: String,
     download_filename: String,
     podcast_title: String,
     download_folder: String,
 }
 
 fn main() -> Result<()> {
-    let matches = App::new("gpooderid3")
+    let matches = Command::new("gpooderid3")
         .version("0.1")
         .author("Christof Damian <christof@damian.net>")
         .about("Add missing tags to gpodder downloads")
         .arg(
-            Arg::with_name("database")
-                .short("d")
+            Arg::new("database")
+                .short('d')
                 .long("database")
                 .help("Sets gpodder database")
-                .takes_value(true)
                 .default_value("gpodder.db"),
         )
         .arg(
-            Arg::with_name("path")
-                .short("p")
+            Arg::new("path")
+                .short('p')
                 .long("path")
                 .help("Sets download path")
-                .takes_value(true)
                 .default_value("."),
         )
         .get_matches();
 
-    let database = matches.value_of("database").unwrap();
-    let path = matches.value_of("path").unwrap();
+    let database = matches.get_one::<String>("database").unwrap();
+    let path = matches.get_one::<String>("path").unwrap();
 
     gpodderid3(database, path)
 }
@@ -64,8 +62,8 @@ fn gpodderid3(database: &str, path: &str) -> Result<()> {
     let episode_iter = stmt.query_map([], |row| {
         Ok(Episode {
             title: row.get("title")?,
-            description: row.get("description")?,
-            mime_type: row.get("mime_type")?,
+            // description: row.get("description")?,
+            // mime_type: row.get("mime_type")?,
             download_filename: row.get("download_filename")?,
             podcast_title: row.get("podcast_title")?,
             download_folder: row.get("download_folder")?,
