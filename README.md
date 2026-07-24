@@ -1,4 +1,4 @@
-⚠️ **This repository has moved to Codeberg: https://codeberg.org/cdamian/gpodderid3**
+⚠️ **This repository has moved to Forgejo: https://forgejo.damian.net/christof/gpodderid3**
 
 This GitHub repository is archived and no longer maintained here.
 # gpodderid3
